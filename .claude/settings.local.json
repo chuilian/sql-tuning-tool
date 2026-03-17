@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /W/AI/work/SQLtuning && pip install -r requirements.txt -q)",
+      "Bash(sleep 3 && curl -s http://localhost:8501 | head -20)",
+      "Bash(cd /W/AI/work/SQLtuning && python test_modules.py)",
+      "Bash(cd /W/AI/work/SQLtuning && python test_modules_v2.py、)",
+      "Bash(cd /W/AI/work/SQLtuning && python test_modules_v2.py)",
+      "Bash(curl -s http://localhost:8501 | head -5)",
+      "Bash(sleep 3 && curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8501)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8501)",
+      "Bash(cd /W/AI/work/SQLtuning && python test_modules.py 2>&1 | head -30)"
+    ]
+  }
+}
