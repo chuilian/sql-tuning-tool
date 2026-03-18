@@ -547,7 +547,7 @@ def render_sql_diagnosis(clients):
             local_analysis = clients["analyzer"].analyze(sql_input)
 
             ai_analysis = None
-            if os.getenv("ANTHROPIC_API_KEY"):
+            if clients["claude"].is_available():
                 try:
                     ai_analysis = clients["claude"].analyze_sql(sql_input)
                 except:
@@ -648,7 +648,7 @@ def render_plan_explanation(clients):
             bottlenecks = clients["parser"].identify_bottlenecks(parsed_plan)
 
             ai_analysis = None
-            if os.getenv("ANTHROPIC_API_KEY"):
+            if clients["claude"].is_available():
                 try:
                     ai_analysis = clients["claude"].explain_plan(plan_input, sql_input_plan)
                 except:
@@ -734,7 +734,7 @@ def render_sql_rewrite(clients):
             rewrite_result = rewriter.rewrite(sql_to_rewrite, suggestions)
 
             ai_rewrite = None
-            if os.getenv("ANTHROPIC_API_KEY") and suggestions:
+            if clients["claude"].is_available() and suggestions:
                 try:
                     ai_rewrite = clients["claude"].rewrite_sql(sql_to_rewrite, suggestions)
                 except:
