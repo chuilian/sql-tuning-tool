@@ -27,163 +27,263 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 样式配置 - 现代化深色主题
+# 样式配置 - 简洁科技感深色主题
 st.markdown("""
 <style>
-    /* 全局样式 */
+    /* ===== 全局样式 ===== */
     .stApp {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        background: linear-gradient(180deg, #0a0a0f 0%, #12121a 50%, #0d0d14 100%);
+        min-height: 100vh;
     }
 
-    /* 主标题 */
+    /* 隐藏默认header */
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+    }
+
+    /* ===== 主标题 ===== */
     .main-header {
-        font-size: 2.5rem;
-        font-weight: 800;
-        background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+        font-size: 2.8rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #00d4ff 100%);
+        background-size: 200% auto;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 1.5rem;
+        animation: shine 3s linear infinite;
         text-align: center;
-        padding: 1rem;
+        padding: 1.5rem 0;
+        margin-bottom: 0.5rem;
     }
 
-    /* 副标题 */
+    @keyframes shine {
+        to { background-position: 200% center; }
+    }
+
+    /* ===== 副标题 ===== */
     .sub-header {
-        font-size: 1.2rem;
-        color: #94a3b8;
-        margin-bottom: 1rem;
+        font-size: 0.95rem;
+        color: #64748b;
+        text-align: center;
+        margin-bottom: 2rem;
+        letter-spacing: 0.05em;
     }
 
-    /* 卡片样式 */
+    /* ===== 卡片样式 ===== */
     .card {
-        background: rgba(30, 41, 59, 0.8);
-        border-radius: 1rem;
+        background: linear-gradient(135deg, rgba(30, 30, 45, 0.9) 0%, rgba(20, 20, 35, 0.9) 100%);
+        border-radius: 16px;
         padding: 1.5rem;
         margin: 1rem 0;
-        border: 1px solid rgba(99, 102, 241, 0.2);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(100, 100, 150, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
     }
 
-    /* 严重程度标签 */
-    .severity-urgent {
-        color: #ef4444;
-        font-weight: bold;
-        background: rgba(239, 68, 68, 0.1);
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
+    /* ===== 标签样式 ===== */
+    .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.85rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
     }
-    .severity-suggest {
-        color: #eab308;
-        font-weight: bold;
-        background: rgba(234, 179, 8, 0.1);
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
+    .tag-urgent {
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.12);
+        border: 1px solid rgba(255, 107, 107, 0.25);
     }
-    .severity-optional {
-        color: #22c55e;
-        font-weight: bold;
-        background: rgba(34, 197, 94, 0.1);
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
+    .tag-suggest {
+        color: #ffd43b;
+        background: rgba(255, 212, 59, 0.1);
+        border: 1px solid rgba(255, 212, 59, 0.2);
+    }
+    .tag-optional {
+        color: #69db7c;
+        background: rgba(105, 219, 124, 0.1);
+        border: 1px solid rgba(105, 219, 124, 0.2);
     }
 
-    /* 代码块样式 */
+    /* ===== 代码输入框 ===== */
     .stTextArea textarea {
-        font-family: 'Fira Code', 'Courier New', monospace;
-        font-size: 14px;
-        background: #1e293b;
+        font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+        font-size: 13px;
+        background: linear-gradient(135deg, #0d0d14 0%, #1a1a24 100%);
         color: #e2e8f0;
-        border: 1px solid #334155;
-        border-radius: 0.5rem;
+        border: 1px solid rgba(100, 100, 150, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        line-height: 1.6;
+    }
+    .stTextArea textarea:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
     }
 
-    /* 按钮样式 */
+    /* ===== 按钮样式 ===== */
     .stButton > button {
-        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
         color: white;
         border: none;
-        border-radius: 0.75rem;
+        border-radius: 12px;
         padding: 0.75rem 2rem;
         font-weight: 600;
-        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        letter-spacing: 0.02em;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
     }
     .stButton > button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
     }
 
-    /* 侧边栏样式 */
+    /* ===== 侧边栏 ===== */
     [data-testid="stSidebar"] {
-        background: rgba(15, 23, 42, 0.95);
-        border-right: 1px solid #334155;
+        background: linear-gradient(180deg, #0d0d14 0%, #12121a 100%);
+        border-right: 1px solid rgba(100, 100, 150, 0.1);
     }
 
-    /* 指标卡片 */
+    /* ===== 指标卡片 ===== */
     [data-testid="stMetric"] {
-        background: rgba(30, 41, 59, 0.6);
-        padding: 1rem;
-        border-radius: 0.75rem;
-        border: 1px solid #334155;
+        background: linear-gradient(135deg, rgba(30, 30, 45, 0.6) 0%, rgba(20, 20, 35, 0.6) 100%);
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        border: 1px solid rgba(100, 100, 150, 0.1);
+    }
+    [data-testid="stMetricLabel"] {
+        color: #64748b !important;
+        font-size: 0.75rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    [data-testid="stMetricValue"] {
+        color: #f1f5f9 !important;
+        font-size: 1.5rem !important;
+        font-weight: 600;
     }
 
-    /* 折叠面板 */
+    /* ===== 折叠面板 ===== */
     .streamlit-expanderHeader {
-        background: rgba(30, 41, 59, 0.6);
-        border-radius: 0.5rem;
-        border: 1px solid #334155;
-    }
-
-    /* 代码高亮区域 */
-    .sql-code {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        background: linear-gradient(135deg, rgba(30, 30, 45, 0.6) 0%, rgba(20, 20, 35, 0.6) 100%);
+        border-radius: 12px !important;
+        border: 1px solid rgba(100, 100, 150, 0.1);
         color: #e2e8f0;
-        padding: 1.5rem;
-        border-radius: 0.75rem;
-        font-family: 'Fira Code', 'Courier New', monospace;
-        border: 1px solid #334155;
-        overflow-x: auto;
+        font-weight: 500;
+    }
+    .streamlit-expanderHeader:hover {
+        background: linear-gradient(135deg, rgba(40, 40, 60, 0.6) 0%, rgba(25, 25, 40, 0.6) 100%);
     }
 
-    /* 成功信息 */
-    .success-box {
-        background: rgba(34, 197, 94, 0.1);
-        border: 1px solid #22c55e;
-        border-radius: 0.75rem;
-        padding: 1rem;
-        color: #22c55e;
-    }
-
-    /* 警告信息 */
-    .warning-box {
-        background: rgba(234, 179, 8, 0.1);
-        border: 1px solid #eab308;
-        border-radius: 0.75rem;
-        padding: 1rem;
-        color: #eab308;
-    }
-
-    /* 错误信息 */
-    .error-box {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid #ef4444;
-        border-radius: 0.75rem;
-        padding: 1rem;
-        color: #ef4444;
-    }
-
-    /* 分隔线 */
+    /* ===== 分隔线 ===== */
     hr {
-        border-color: #334155;
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(100, 100, 150, 0.2), transparent);
         margin: 2rem 0;
     }
 
-    /* 表格样式 */
+    /* ===== 表格 ===== */
     .dataframe {
         border: none !important;
     }
+
+    /* ===== 选项卡 ===== */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        border-radius: 10px 10px 0 0;
+        padding: 0.75rem 1.5rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(79, 70, 229, 0.2) 100%);
+        color: #a78bfa;
+        border-bottom: 2px solid #7c3aed;
+    }
+
+    /* ===== 滚动条 ===== */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: rgba(30, 30, 45, 0.5);
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(100, 100, 150, 0.3);
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(100, 100, 150, 0.5);
+    }
+
+    /* ===== 代码高亮 ===== */
+    .sql-code {
+        background: linear-gradient(135deg, #0d0d14 0%, #1a1a24 100%);
+        color: #a78bfa;
+        padding: 1.25rem;
+        border-radius: 12px;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 13px;
+        border: 1px solid rgba(100, 100, 150, 0.15);
+        overflow-x: auto;
+    }
+
+    /* ===== 成功/警告/错误 ===== */
+    .success-box {
+        background: rgba(105, 219, 124, 0.08);
+        border: 1px solid rgba(105, 219, 124, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        color: #69db7c;
+    }
+    .warning-box {
+        background: rgba(255, 212, 59, 0.08);
+        border: 1px solid rgba(255, 212, 59, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        color: #ffd43b;
+    }
+    .error-box {
+        background: rgba(255, 107, 107, 0.08);
+        border: 1px solid rgba(255, 107, 107, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        color: #ff6b6b;
+    }
+
+    /* ===== 导航radio ===== */
+    [data-testid="stRadio"] > div {
+        gap: 0.5rem;
+    }
+    [data-testid="stRadio"] label {
+        background: rgba(30, 30, 45, 0.5);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        color: #94a3b8;
+        transition: all 0.2s;
+    }
+    [data-testid="stRadio"] label:hover {
+        background: rgba(40, 40, 60, 0.6);
+        color: #e2e8f0;
+    }
+    [data-testid="stRadio"] [data-testid="stRadio"] > div > div:first-child > div:first-child > div:first-child {
+        accent-color: #7c3aed;
+    }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # 初始化客户端
