@@ -15,8 +15,12 @@ from modules.plan_parser import PlanParser
 from modules.optimizer import Optimizer
 from modules.sql_rewriter import SQLRewriter
 from modules.claude_client import ClaudeClient
+from modules.user_config import load_user_config, save_user_config, get_user_api_keys, apply_user_env
 from utils.formatter import format_sql
 from utils.supabase_client import SupabaseClient
+
+# 应用启动时加载用户配置
+apply_user_env()
 
 
 # 页面配置
@@ -439,29 +443,30 @@ def render_sidebar():
 
         page = st.radio(
             "导航",
-            ["SQL 诊断", "执行计划", "SQL 改写"],
+            ["SQL 诊断", "执行计划", "SQL 改写", "⚙️ 设置"],
             label_visibility="collapsed"
         )
 
         st.markdown("---")
 
         # API 状态
-        st.markdown('<div style="color: #8b949e; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">状态</div>', unsafe_allow_html=True)
+        st.markdown('<div style="color: #8b949e; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">AI 状态</div>', unsafe_allow_html=True)
 
         missing = check_api_keys()
         if missing:
             st.markdown(f"""
             <div class="badge badge-warning">
-                ⚠️ API 未配置
+                ⚠️ 请先配置 API
             </div>
             <div style="font-size: 0.75rem; color: #484f58; margin-top: 0.5rem;">
-                请在 .env 中配置 API 密钥
+                在"设置"中配置您的 API 密钥
             </div>
             """, unsafe_allow_html=True)
         else:
+            provider = clients["claude"].get_provider_name()
             st.markdown(f"""
             <div class="badge badge-success">
-                ✓ API 已配置
+                ✓ {provider}
             </div>
             """, unsafe_allow_html=True)
 
@@ -769,6 +774,114 @@ def render_sql_rewrite(clients):
                         st.code(alt.get("sql", ""), language="sql")
 
 
+def render_settings():
+    """设置页面"""
+    st.markdown("""
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <span class="accent">⚙️</span> API 设置
+        </h1>
+        <p class="hero-subtitle">配置您的个人 API 密钥，仅本地可用</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("### 选择 AI 服务商")
+
+    provider = st.selectbox(
+        "选择您要使用的 AI 服务商",
+        ["MiniMax (推荐)", "Anthropic Claude", "OpenAI"],
+        label_visibility="collapsed"
+    )
+
+    # 获取当前配置
+    current_keys = get_user_api_keys()
+
+    with st.form("api_key_form"):
+        if "MiniMax" in provider:
+            api_key = st.text_input(
+                "MiniMax API Key",
+                type="password",
+                value=current_keys.get("minimax", ""),
+                placeholder="输入您的 MiniMax API Key"
+            )
+            st.caption("""
+            获取方式：
+            1. 访问 [MiniMax 开放平台](https://platform.minimaxi.com/)
+            2. 注册账号并创建 API Key
+            3. 复制密钥粘贴到此处
+            """)
+
+        elif "Claude" in provider:
+            api_key = st.text_input(
+                "Anthropic Claude API Key",
+                type="password",
+                value=current_keys.get("anthropic", ""),
+                placeholder="输入您的 Claude API Key"
+            )
+            st.caption("""
+            获取方式：
+            1. 访问 [Anthropic Console](https://console.anthropic.com/)
+            2. 创建 API Key
+            3. 复制密钥粘贴到此处
+            """)
+
+        else:
+            api_key = st.text_input(
+                "OpenAI API Key",
+                type="password",
+                value=current_keys.get("openai", ""),
+                placeholder="输入您的 OpenAI API Key"
+            )
+            st.caption("""
+            获取方式：
+            1. 访问 [OpenAI Platform](https://platform.openai.com/)
+            2. 创建 API Key
+            3. 复制密钥粘贴到此处
+            """)
+
+        submitted = st.form_submit_button("💾 保存配置", type="primary")
+
+        if submitted:
+            provider_key = {
+                "MiniMax (推荐)": "minimax",
+                "Anthropic Claude": "anthropic",
+                "OpenAI": "openai"
+            }.get(provider, "minimax")
+
+            # 保存配置
+            save_user_config({
+                "MINIMAX_API_KEY": api_key if provider_key == "minimax" else current_keys.get("minimax", ""),
+                "ANTHROPIC_API_KEY": api_key if provider_key == "anthropic" else current_keys.get("anthropic", ""),
+                "OPENAI_API_KEY": api_key if provider_key == "openai" else current_keys.get("openai", "")
+            })
+
+            # 重新加载环境变量
+            apply_user_env()
+
+            st.success("✓ 配置已保存！请刷新页面使配置生效。")
+
+    st.markdown("---")
+    st.markdown("### 当前配置状态")
+
+    # 显示当前配置
+    if any(current_keys.values()):
+        for name, key in [("MiniMax", "minimax"), ("Claude", "anthropic"), ("OpenAI", "openai")]:
+            if current_keys.get(key):
+                masked = current_keys[key][:8] + "..." + current_keys[key][-4:] if len(current_keys[key]) > 12 else "***"
+                st.markdown(f"**{name}**: `{masked}`")
+    else:
+        st.info("暂未配置任何 API 密钥")
+
+    st.markdown("---")
+    st.markdown("""
+    ### 🔒 隐私说明
+
+    - 您的 API 密钥保存在本地：`~/.sql-optimizer/config.json`
+    - 密钥仅在您的本地设备使用，不会上传到任何服务器
+    - 每个用户需要单独配置自己的 API 密钥
+    """)
+
+
 # 主函数
 def main():
     """主函数"""
@@ -781,6 +894,8 @@ def main():
         render_plan_explanation(clients)
     elif page == "SQL 改写":
         render_sql_rewrite(clients)
+    elif "设置" in page:
+        render_settings()
 
 
 if __name__ == "__main__":
