@@ -861,17 +861,27 @@ def render_settings():
             # 重新加载环境变量
             apply_user_env()
 
-            st.success("✓ 配置已保存！请刷新页面使配置生效。")
+            st.success("✓ 配置已保存！页面将自动刷新...")
+
+            # 刷新页面使配置生效
+            import time
+            time.sleep(1)
+            st.rerun()
 
     st.markdown("---")
     st.markdown("### 当前配置状态")
 
     # 显示当前配置
-    if any(current_keys.values()):
-        for name, key in [("MiniMax", "minimax"), ("Claude", "anthropic"), ("OpenAI", "openai")]:
-            if current_keys.get(key):
-                masked = current_keys[key][:8] + "..." + current_keys[key][-4:] if len(current_keys[key]) > 12 else "***"
-                st.markdown(f"**{name}**: `{masked}`")
+    if current_keys and isinstance(current_keys, dict):
+        has_any = any(v for v in current_keys.values() if v)
+        if has_any:
+            for name, key in [("MiniMax", "minimax"), ("Claude", "anthropic"), ("OpenAI", "openai")]:
+                val = current_keys.get(key, "")
+                if val:
+                    masked = val[:8] + "..." + val[-4:] if len(val) > 12 else "***"
+                    st.markdown(f"**{name}**: `{masked}`")
+        else:
+            st.info("暂未配置任何 API 密钥")
     else:
         st.info("暂未配置任何 API 密钥")
 
