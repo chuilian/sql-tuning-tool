@@ -7,6 +7,18 @@ import json
 import requests
 from typing import Dict, Optional
 
+# 禁用代理，避免网络问题
+os.environ["HTTP_PROXY"] = ""
+os.environ["HTTPS_PROXY"] = ""
+os.environ["http_proxy"] = ""
+os.environ["https_proxy"] = ""
+
+# requests 禁用代理
+try:
+    requests.proxies = {"http": None, "https": None}
+except:
+    pass
+
 
 class AIClient:
     """通用 AI 客户端"""
