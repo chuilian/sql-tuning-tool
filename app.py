@@ -788,95 +788,86 @@ def render_settings():
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("### 选择 AI 服务商")
-
-    provider = st.selectbox(
-        "选择您要使用的 AI 服务商",
-        ["MiniMax (推荐)", "Anthropic Claude", "OpenAI"],
-        label_visibility="collapsed"
-    )
-
     # 获取当前配置
-    current_keys = get_user_api_keys()
+    current_keys = {"minimax": "", "anthropic": "", "openai": ""}
+    try:
+        current_keys = get_user_api_keys()
+    except:
+        pass
 
-    with st.form("api_key_form"):
-        if "MiniMax" in provider:
-            api_key = st.text_input(
-                "MiniMax API Key",
-                type="password",
-                value=current_keys.get("minimax", ""),
-                placeholder="输入您的 MiniMax API Key"
-            )
-            st.caption("""
-            获取方式：
-            1. 访问 [MiniMax 开放平台](https://platform.minimaxi.com/)
-            2. 注册账号并创建 API Key
-            3. 复制密钥粘贴到此处
-            """)
-
-        elif "Claude" in provider:
-            api_key = st.text_input(
-                "Anthropic Claude API Key",
-                type="password",
-                value=current_keys.get("anthropic", ""),
-                placeholder="输入您的 Claude API Key"
-            )
-            st.caption("""
-            获取方式：
-            1. 访问 [Anthropic Console](https://console.anthropic.com/)
-            2. 创建 API Key
-            3. 复制密钥粘贴到此处
-            """)
-
-        else:
-            api_key = st.text_input(
-                "OpenAI API Key",
-                type="password",
-                value=current_keys.get("openai", ""),
-                placeholder="输入您的 OpenAI API Key"
-            )
-            st.caption("""
-            获取方式：
-            1. 访问 [OpenAI Platform](https://platform.openai.com/)
-            2. 创建 API Key
-            3. 复制密钥粘贴到此处
-            """)
-
-        submitted = st.form_submit_button("💾 保存配置", type="primary")
-
-        if submitted:
-            provider_key = {
-                "MiniMax (推荐)": "minimax",
-                "Anthropic Claude": "anthropic",
-                "OpenAI": "openai"
-            }.get(provider, "minimax")
-
-            # 保存配置
-            save_user_config({
-                "MINIMAX_API_KEY": api_key if provider_key == "minimax" else current_keys.get("minimax", ""),
-                "ANTHROPIC_API_KEY": api_key if provider_key == "anthropic" else current_keys.get("anthropic", ""),
-                "OPENAI_API_KEY": api_key if provider_key == "openai" else current_keys.get("openai", "")
-            })
-
-            # 重新加载环境变量
+    # MiniMax 配置
+    st.markdown("### MiniMax (推荐)")
+    minimax_key = st.text_input(
+        "MiniMax API Key",
+        type="password",
+        value=current_keys.get("minimax", ""),
+        placeholder="输入您的 MiniMax API Key",
+        key="minimax_key"
+    )
+    if minimax_key:
+        try:
+            save_user_config({"MINIMAX_API_KEY": minimax_key})
             apply_user_env()
+            st.success("✓ MiniMax API 已保存！请刷新页面使配置生效。")
+        except Exception as e:
+            st.error(f"保存失败: {e}")
 
-            st.success("✓ 配置已保存！请手动刷新页面使配置生效。")
+    st.markdown("---")
+
+    # Claude 配置
+    st.markdown("### Anthropic Claude")
+    claude_key = st.text_input(
+        "Claude API Key",
+        type="password",
+        value=current_keys.get("anthropic", ""),
+        placeholder="输入您的 Claude API Key",
+        key="claude_key"
+    )
+    if claude_key:
+        try:
+            save_user_config({"ANTHROPIC_API_KEY": claude_key})
+            apply_user_env()
+            st.success("✓ Claude API 已保存！请刷新页面使配置生效。")
+        except Exception as e:
+            st.error(f"保存失败: {e}")
+
+    st.markdown("---")
+
+    # OpenAI 配置
+    st.markdown("### OpenAI")
+    openai_key = st.text_input(
+        "OpenAI API Key",
+        type="password",
+        value=current_keys.get("openai", ""),
+        placeholder="输入您的 OpenAI API Key",
+        key="openai_key"
+    )
+    if openai_key:
+        try:
+            save_user_config({"OPENAI_API_KEY": openai_key})
+            apply_user_env()
+            st.success("✓ OpenAI API 已保存！请刷新页面使配置生效。")
+        except Exception as e:
+            st.error(f"保存失败: {e}")
 
     st.markdown("---")
     st.markdown("### 当前配置状态")
 
     # 显示当前配置
-    if current_keys and isinstance(current_keys, dict):
-        has_any = any(v for v in current_keys.values() if v)
-        if has_any:
-            for name, key in [("MiniMax", "minimax"), ("Claude", "anthropic"), ("OpenAI", "openai")]:
-                val = current_keys.get(key, "")
-                if val:
-                    masked = val[:8] + "..." + val[-4:] if len(val) > 12 else "***"
-                    st.markdown(f"**{name}**: `{masked}`")
-        else:
-            st.info("暂未配置任何 API 密钥")
+    try:
+        show_keys = get_user_api_keys()
+        if show_keys and isinstance(show_keys, dict):
+            has_any = any(v for v in show_keys.values() if v)
+            if has_any:
+                for name, key in [("MiniMax", "minimax"), ("Claude", "anthropic"), ("OpenAI", "openai")]:
+                    val = show_keys.get(key, "")
+                    if val:
+                        masked = val[:8] + "..." + val[-4:] if len(val) > 12 else "***"
+                        st.markdown(f"**{name}**: `{masked}`")
+            else:
+                st.info("暂未配置任何 API 密钥")
+    except:
+        st.info("暂未配置任何 API 密钥")
     else:
         st.info("暂未配置任何 API 密钥")
 
