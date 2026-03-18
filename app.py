@@ -27,56 +27,160 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 样式配置
+# 样式配置 - 现代化深色主题
 st.markdown("""
 <style>
+    /* 全局样式 */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    /* 主标题 */
     .main-header {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #6366f1;
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    /* 副标题 */
+    .sub-header {
+        font-size: 1.2rem;
+        color: #94a3b8;
         margin-bottom: 1rem;
     }
+
+    /* 卡片样式 */
+    .card {
+        background: rgba(30, 41, 59, 0.8);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 严重程度标签 */
     .severity-urgent {
         color: #ef4444;
         font-weight: bold;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
     }
     .severity-suggest {
         color: #eab308;
         font-weight: bold;
+        background: rgba(234, 179, 8, 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
     }
     .severity-optional {
         color: #22c55e;
         font-weight: bold;
+        background: rgba(34, 197, 94, 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
     }
+
+    /* 代码块样式 */
     .stTextArea textarea {
-        font-family: 'Courier New', monospace;
-    }
-    .sql-code {
-        background-color: #1e293b;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        font-size: 14px;
+        background: #1e293b;
         color: #e2e8f0;
-        padding: 1rem;
+        border: 1px solid #334155;
         border-radius: 0.5rem;
-        font-family: 'Courier New', monospace;
     }
-    .metric-card {
-        background-color: #1e293b;
+
+    /* 按钮样式 */
+    .stButton > button {
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+    }
+
+    /* 侧边栏样式 */
+    [data-testid="stSidebar"] {
+        background: rgba(15, 23, 42, 0.95);
+        border-right: 1px solid #334155;
+    }
+
+    /* 指标卡片 */
+    [data-testid="stMetric"] {
+        background: rgba(30, 41, 59, 0.6);
         padding: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #334155;
+    }
+
+    /* 折叠面板 */
+    .streamlit-expanderHeader {
+        background: rgba(30, 41, 59, 0.6);
         border-radius: 0.5rem;
-        text-align: center;
+        border: 1px solid #334155;
     }
-    .diff-line {
-        font-family: 'Courier New', monospace;
-        white-space: pre-wrap;
+
+    /* 代码高亮区域 */
+    .sql-code {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        color: #e2e8f0;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        font-family: 'Fira Code', 'Courier New', monospace;
+        border: 1px solid #334155;
+        overflow-x: auto;
     }
-    .diff-add {
+
+    /* 成功信息 */
+    .success-box {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid #22c55e;
+        border-radius: 0.75rem;
+        padding: 1rem;
         color: #22c55e;
-        background-color: #14532d;
-        padding: 0.2rem;
     }
-    .diff-remove {
+
+    /* 警告信息 */
+    .warning-box {
+        background: rgba(234, 179, 8, 0.1);
+        border: 1px solid #eab308;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        color: #eab308;
+    }
+
+    /* 错误信息 */
+    .error-box {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid #ef4444;
+        border-radius: 0.75rem;
+        padding: 1rem;
         color: #ef4444;
-        background-color: #7f1d1d;
-        padding: 0.2rem;
+    }
+
+    /* 分隔线 */
+    hr {
+        border-color: #334155;
+        margin: 2rem 0;
+    }
+
+    /* 表格样式 */
+    .dataframe {
+        border: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -337,7 +441,7 @@ def render_sql_rewrite(clients):
     with col2:
         st.markdown("### 优化建议")
         if sql_to_rewrite:
-            analysis = clients["analyzer"].analyze(sql_torewrite)
+            analysis = clients["analyzer"].analyze(sql_to_rewrite)
             issues = analysis.get("issues", [])
 
             optimizer = Optimizer()

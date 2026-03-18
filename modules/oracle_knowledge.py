@@ -595,3 +595,264 @@ def get_anti_pattern_knowledge(pattern: str = None):
     if pattern:
         return ANTI_PATTERN_KNOWLEDGE.get(pattern, {})
     return ANTI_PATTERN_KNOWLEDGE
+
+
+# ============== Oracle 核心优化知识 ==============
+
+ORACLE_CORE_KNOWLEDGE = {
+    "execution_plan": {
+        "name": "执行计划原理",
+        "description": "Oracle 如何解析和执行 SQL",
+        "steps": [
+            "1. 解析(PARSE): 语法检查、语义检查、生成执行计划",
+            "2. 绑定(BIND): 绑定变量值",
+            "3. 估计(ESTIMATE): 估算行数、成本",
+            "4. 执行(EXECUTE): 按计划执行"
+        ],
+        "cbo": "CBO (基于成本的优化器) vs RBO (基于规则的优化器)",
+        "optimizer_mode": "ALL_ROWS vs FIRST_ROWS"
+    },
+
+    "statistics": {
+        "name": "统计信息",
+        "description": "优化器做出正确决策的基础",
+        "包含内容": [
+            "表: 行数、数据块数、平均行长度",
+            "列: 基数、NULL值数量、直方图",
+            "索引: B-Tree 深度、叶子块数"
+        ],
+        "收集方法": [
+            "DBMS_STATS.GATHER_TABLE_STATS",
+            "DBMS_STATS.GATHER_SCHEMA_STATS",
+            "ANALYZE TABLE (旧方式)"
+        ],
+        "重要性": "统计信息过期会导致执行计划变差"
+    },
+
+    "bind_variable": {
+        "name": "绑定变量",
+        "description": "提高 SQL 复用性和减少硬解析",
+        "优点": [
+            "减少硬解析开销",
+            "共享池命中率提高",
+            "降低 CPU 使用"
+        ],
+        "缺点": [
+            "执行计划可能不最优（绑定变量peek）",
+            "首次执行时可能选择较差计划"
+        ],
+        "示例": "SELECT * FROM emp WHERE empno = :empno"
+    },
+
+    "shared_pool": {
+        "name": "共享池",
+        "description": "SGA 中存储已解析的 SQL 和执行计划",
+        "组成": [
+            "Library Cache: 存储 SQL 和执行计划",
+            "Data Dictionary Cache: 存储字典信息",
+            "Result Cache: 存储查询结果"
+        ],
+        "调优": [
+            "绑定变量",
+            "设置合理的 SHARED_POOL_SIZE",
+            "避免动态 SQL"
+        ]
+    },
+
+    "buffer_cache": {
+        "name": "缓冲区缓存",
+        "description": "存储从磁盘读取的数据块",
+        "指标": [
+            "Buffer Cache Hit Ratio: 应 > 95%",
+            "物理读 vs 逻辑读"
+        ],
+        "调优": [
+            "增加 DB_CACHE_SIZE",
+            "使用 Keep Pool 缓存热点对象",
+            "创建合适的索引减少全表扫描"
+        ]
+    },
+
+    "redo_log": {
+        "name": "重做日志",
+        "description": "记录数据库变更",
+        "优化建议": [
+            "使用快速磁盘(SSD)",
+            "适当增加日志文件大小",
+            "使用 NOLOGGING 减少日志生成"
+        ]
+    },
+
+    "wait_events": {
+        "name": "等待事件",
+        "description": "诊断性能问题的关键",
+        "常见事件": [
+            "db file scattered read: 全表扫描",
+            "db file sequential read: 索引读取",
+            "buffer busy waits: 争用",
+            "latch free: 闩锁争用",
+            "enq: TM lock: 表锁争用"
+        ],
+        "查询": "SELECT * FROM v$session_wait WHERE sid = <sid>"
+    },
+
+    "execution_plan_operations": {
+        "name": "常见执行计划操作",
+        "access_methods": {
+            "TABLE ACCESS FULL": "全表扫描",
+            "TABLE ACCESS BY ROWID": "通过ROWID访问",
+            "INDEX UNIQUE SCAN": "唯一索引扫描",
+            "INDEX RANGE SCAN": "索引范围扫描",
+            "INDEX FULL SCAN": "全索引扫描",
+            "INDEX FAST FULL SCAN": "快速全索引扫描",
+            "INDEX SKIP SCAN": "索引跳跃扫描"
+        },
+        "join_operations": {
+            "NESTED LOOPS": "嵌套循环连接",
+            "HASH JOIN": "哈希连接",
+            "MERGE JOIN": "排序合并连接"
+        },
+        "other_operations": {
+            "SORT": "排序操作",
+            "AGGREGATE": "聚合",
+            "VIEW": "视图访问",
+            "SUBQUERY": "子查询",
+            "CONCATENATION": "UNION/UNION ALL"
+        }
+    },
+
+    "sql_tuning_steps": {
+        "name": "SQL 调优步骤",
+        "steps": [
+            "1. 识别慢 SQL (AWR/ASH/Enterprise Manager)",
+            "2. 获取执行计划 (EXPLAIN/AUTOTRACE/DBMS_XPLAN)",
+            "3. 分析执行计划",
+            "4. 分析统计信息",
+            "5. 应用优化策略",
+            "6. 验证优化效果"
+        ],
+        "tools": [
+            "EXPLAIN PLAN",
+            "AUTOTRACE",
+            "DBMS_XPLAN",
+            "SQL Tuning Advisor",
+            "SQL Access Advisor"
+        ]
+    },
+
+    "oracle_performance_tuning": {
+        "name": "Oracle 性能调优层次",
+        "levels": [
+            "应用层: SQL 优化、索引设计",
+            "实例层: 内存分配、SGA/PGA",
+            "系统层: IO、网络",
+            "数据库层: 表结构、范式"
+        ],
+        "优先顺序": "SQL优化 > 索引 > 内存 > 其他"
+    }
+}
+
+
+# ============== 查询优化知识 ==============
+
+QUERY_OPTIMIZATION = {
+    "rownum": {
+        "问题": "使用 ROWNUM 分页效率低",
+        "原因": "先生成 ROWNUM 再过滤",
+        "方案": "使用 ROW_NUMBER() 或子查询 + 索引"
+    },
+
+    "distinct": {
+        "问题": "DISTINCT 使用",
+        "建议": "确认是否需要去重，考虑使用 EXISTS"
+    },
+
+    "union": {
+        "问题": "UNION vs UNION ALL",
+        "建议": "不需要去重时使用 UNION ALL"
+    },
+
+    "fetch_first": {
+        "问题": "FETCH FIRST N ROWS ONLY",
+        "优化": "使用 FIRST_ROWS 优化模式或 ROW_NUMBER"
+    }
+}
+
+
+# ============== 内存优化知识 ==============
+
+MEMORY_OPTIMIZATION = {
+    "sga": {
+        "name": "SGA (System Global Area)",
+        "组件": [
+            "Shared Pool: 共享SQL和字典",
+            "Buffer Cache: 数据缓冲区",
+            "Redo Log Buffer: 重做日志",
+            "Large Pool: 大型内存区",
+            "Java Pool: Java内存"
+        ]
+    },
+
+    "pga": {
+        "name": "PGA (Program Global Area)",
+        "组成": [
+            "Sort Area: 排序内存",
+            "Hash Area: 哈希连接内存",
+            "Bitmap Merge Area: 位图合并内存"
+        ],
+        "自动管理": "PGA_AGGREGATE_TARGET (推荐)"
+    },
+
+    "memory_target": {
+        "name": "自动内存管理",
+        "参数": "MEMORY_TARGET, MEMORY_MAX_TARGET",
+        "优点": "简化管理，Oracle自动分配"
+    }
+}
+
+
+# ============== IO 优化知识 ==============
+
+IO_OPTIMIZATION = {
+    "storage": {
+        "建议": [
+            "使用 SSD 或高速存储",
+            "分离redo日志到独立磁盘",
+            "分离索引和表到不同表空间",
+            "使用 ASM 管理存储"
+        ]
+    },
+
+    "io_calibration": {
+        "工具": "DBMS_RESOURCE_MANAGER.CALIBRATE_IO",
+        "目的": "确定存储IO性能"
+    }
+}
+
+
+def get_oracle_core_knowledge(topic: str = None):
+    """获取 Oracle 核心优化知识"""
+    if topic:
+        return ORACLE_CORE_KNOWLEDGE.get(topic, {})
+    return ORACLE_CORE_KNOWLEDGE
+
+
+def get_query_optimization(topic: str = None):
+    """获取查询优化知识"""
+    if topic:
+        return QUERY_OPTIMIZATION.get(topic, {})
+    return QUERY_OPTIMIZATION
+
+
+def get_memory_optimization(topic: str = None):
+    """获取内存优化知识"""
+    if topic:
+        return MEMORY_OPTIMIZATION.get(topic, {})
+    return MEMORY_OPTIMIZATION
+
+
+def get_io_optimization(topic: str = None):
+    """获取IO优化知识"""
+    if topic:
+        return IO_OPTIMIZATION.get(topic, {})
+    return IO_OPTIMIZATION
