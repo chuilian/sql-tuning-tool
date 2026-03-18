@@ -22,8 +22,12 @@ def load_user_config() -> dict:
     if CONFIG_FILE.exists():
         try:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+                return {}
+        except Exception as e:
+            print(f"加载配置失败: {e}")
             return {}
     return {}
 
@@ -37,12 +41,18 @@ def save_user_config(config: dict):
 
 def get_user_api_keys() -> dict:
     """获取用户配置的 API 密钥"""
-    config = load_user_config()
-    return {
-        "minimax": config.get("MINIMAX_API_KEY", ""),
-        "anthropic": config.get("ANTHROPIC_API_KEY", ""),
-        "openai": config.get("OPENAI_API_KEY", "")
-    }
+    try:
+        config = load_user_config()
+        if not isinstance(config, dict):
+            config = {}
+        return {
+            "minimax": config.get("MINIMAX_API_KEY", "") or "",
+            "anthropic": config.get("ANTHROPIC_API_KEY", "") or "",
+            "openai": config.get("OPENAI_API_KEY", "") or ""
+        }
+    except Exception as e:
+        print(f"获取API密钥失败: {e}")
+        return {"minimax": "", "anthropic": "", "openai": ""}
 
 
 def set_user_api_key(provider: str, api_key: str):
@@ -70,7 +80,11 @@ def clear_user_config():
 
 def apply_user_env():
     """将用户配置应用到当前进程环境变量"""
-    config = load_user_config()
-    for key, value in config.items():
-        if value:  # 只设置非空值
-            os.environ[key] = value
+    try:
+        config = load_user_config()
+        if isinstance(config, dict):
+            for key, value in config.items():
+                if value and isinstance(value, str):  # 只设置非空字符串
+                    os.environ[key] = value
+    except Exception as e:
+        print(f"应用用户配置失败: {e}")

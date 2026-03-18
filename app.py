@@ -416,12 +416,15 @@ def init_clients():
 
 def check_api_keys():
     """检查 API 密钥配置"""
-    has_any_api = any([
-        os.getenv("ANTHROPIC_API_KEY"),
-        os.getenv("MINIMAX_API_KEY"),
-        os.getenv("OPENAI_API_KEY")
-    ])
-    return [] if has_any_api else ["API_KEY"]
+    try:
+        has_any_api = any([
+            os.getenv("ANTHROPIC_API_KEY"),
+            os.getenv("MINIMAX_API_KEY"),
+            os.getenv("OPENAI_API_KEY")
+        ])
+        return [] if has_any_api else ["API_KEY"]
+    except Exception:
+        return ["API_KEY"]
 
 
 # 侧边栏
