@@ -861,12 +861,7 @@ def render_settings():
             # 重新加载环境变量
             apply_user_env()
 
-            st.success("✓ 配置已保存！页面将自动刷新...")
-
-            # 刷新页面使配置生效
-            import time
-            time.sleep(1)
-            st.rerun()
+            st.success("✓ 配置已保存！请手动刷新页面使配置生效。")
 
     st.markdown("---")
     st.markdown("### 当前配置状态")
